@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: "app-django-server"
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app/
+    ports:
+      - 8000:8000
+    networks:
+      - django-network
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+      - celery
+
+  db:
+    image: postgres
+    container_name: "postgres-django-server"
+    volumes:
+      - django-db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - django-network
+    env_file:
+      - ./.env
+
+  redis:
+    image: redis
+    container_name: "redis-django-server"
+    ports:
+    - "6379:6379"
+    networks:
+      - django-network
+
+  celery:
+    build: .
+    container_name: "celery_worker-django-server"
+    volumes:
+      - .:/app/
+    command: "celery -A core.celery worker --loglevel=info"
+    networks:
+      - django-network
+    depends_on:
+      - redis
+
+networks:
+  django-network:
+    driver: bridge
+
+volumes:
+    django-db:
