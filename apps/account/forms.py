@@ -30,7 +30,5 @@ class AuthForm(forms.Form):
         label='Senha',
         max_length=254,
         strip=False,
-        widget=forms.PasswordInput(
-            attrs={'class': 'form-control'}
-        ),
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
     )

@@ -12,9 +12,13 @@ celery = "^5.2.7"
 redis = "^4.3.5"
 python-decouple = "^3.6"
 psycopg2 = "^2.9.5"
+django-celery-results = "^2.4.0"
 
 
 [tool.poetry.group.dev.dependencies]
+ipdb = "^0.13.9"
+isort = "^5.10.1"
+blue = "^0.9.1"
 
 [build-system]
 requires = ["poetry-core"]

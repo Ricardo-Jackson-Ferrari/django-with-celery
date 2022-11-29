@@ -1,3 +1,4 @@
+from celery import shared_task as _shared_task
 from django.conf import settings as _settings
 from django.contrib.auth import authenticate as _authenticate
 from django.contrib.auth.tokens import (
@@ -18,6 +19,7 @@ __all__ = [
     'authenticate_user',
     'generete_url_for_active_account',
     'set_active_account',
+    'active_account_send_mail',
     'UserNotActivated',
 ]
 UserNotActivated = _UserNotActivated
@@ -60,7 +62,9 @@ def set_active_account(uidb4: str, token: str) -> bool:
         return False
 
 
-def active_account_send_mail(user) -> bool:
+@_shared_task(bind=True, max_retries=5, default_retry_delay=2)
+def active_account_send_mail(self, user_id):
+    user = _User.objects.get(pk=user_id)
     active_url = generete_url_for_active_account(user)
     subject = 'Ative sua conta'
     mail_body = _render_to_string(
@@ -69,5 +73,7 @@ def active_account_send_mail(user) -> bool:
     email = _EmailMessage(subject, mail_body, to=[user.email])
 
     if email.send():
-        return True
-    return False
+        return mail_body
+
+    self.retry(countdown=2**self.request.retries)
+    raise Exception('Erro')

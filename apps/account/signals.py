@@ -8,4 +8,4 @@ from .facade import active_account_send_mail
 @receiver(post_save, sender=get_user_model())
 def active_account_mail(sender, instance, created, **kwargs):
     if created and not instance.is_active:
-        active_account_send_mail(user=instance)
+        active_account_send_mail.delay(user_id=instance.id)
