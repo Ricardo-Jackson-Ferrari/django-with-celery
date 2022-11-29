@@ -18,15 +18,13 @@ services:
       - ./.env
     depends_on:
       - db
-      - celery
+      - redis
 
   db:
-    image: postgres
+    image: postgres:alpine
     container_name: "postgres-django-server"
     volumes:
       - django-db:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -36,23 +34,25 @@ services:
       - ./.env
 
   redis:
-    image: redis
+    image: redis:alpine
     container_name: "redis-django-server"
-    ports:
-    - "6379:6379"
     networks:
       - django-network
 
   celery:
     build: .
+    restart: always
     container_name: "celery_worker-django-server"
     volumes:
       - .:/app/
     command: "celery -A core.celery worker --loglevel=info"
+    env_file:
+      - ./.env
     networks:
       - django-network
     depends_on:
       - redis
+      - db
 
 networks:
   django-network:
