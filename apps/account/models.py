@@ -6,21 +6,25 @@ from .managers import UserManager
 
 
 class User(AbstractUser):
-    email = models.EmailField(_("email address"), unique=True, max_length=255)
+    username = None
+    email = models.EmailField(_('email address'), unique=True, max_length=255)
     is_active = models.BooleanField(
-        _("active"),
+        _('active'),
         default=False,
         help_text=_(
-            "Designates whether this user should be treated as active. "
-            "Unselect this instead of deleting accounts."
+            'Designates whether this user should be treated as active. '
+            'Unselect this instead of deleting accounts.'
         ),
     )
 
-    EMAIL_FIELD = 'email'
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email',]
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
 
     objects = UserManager()
 
     def __str__(self) -> str:
         return self.email
+
+
+class UserNotActivated(Exception):
+    pass
